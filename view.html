@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ANGULAR TODO EXAMPLE</title>
+
+  <script src="https://code.angularjs.org/1.2.9/angular.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.9/angular-animate.min.js"></script>
+  <script src="./xeditable.min.js"></script>
+
+  <link href="./xeditable.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="./site.css">
+
+</head>
+
+  <body ng-app="toDoApp">
+
+    <h1 class="main-title"> TODO LIST </h1>
+    <div class="store">
+      <div ng-controller="ListCtrl">
+        <ul class="todo-list" >
+
+          <li class="todo" ng-repeat="toDo in todoList | filter:todoFilter track by $index" data-id="{{toDo.id}}">
+            <div class="todo-container">
+              <div class="todo-title" editable-text="toDo.desc" onaftersave="saveItem()">
+                {{ toDo.desc }}
+              </div>
+
+              <div class="item-delete" ng-click="removeOrRestoreItem(toDo)" ng-class="{'is-deleted': location.path() == '/deleted'}">
+                <span class="delete-symbol">&#10005</span>
+                <span class="restore-symbol">&#8635</span>
+              </div>
+              <div class="item-complete">
+                Completed?:
+                <input class="toggle" type="checkbox" ng-model="toDo.isCompleted" ng-change="saveItem(todo)">
+              </div>
+            </div>
+          </li>
+
+        </ul>
+        <div class="todo">
+          <form id="todo-form" class="todo-container new-todo" ng-submit="addTodo()">
+            <input class="big-text" id="new-todo" placeholder="What's To Do?" ng-model="newToDo">
+          </form>
+        </div>
+
+
+
+        <div class="todo-filters">
+          <a ng-class="{'is-active': location.path() == '/'} " href="#/">All</a>
+          <a ng-class="{'is-active': location.path() == '/deleted'}" href="#/deleted">Deleted</a>
+          <a ng-class="{'is-active': location.path() == '/completed'}" href="#/completed">Completed</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="./data.js"></script>
+    <script src="./controller.js"></script>
+    <script src="./service.js"></script>
+
+  </body>
+</html>
