@@ -1,35 +1,40 @@
+application = {};
+
 application.toDoApp = angular.module('toDoApp', [
   'listControllers',
-  'xeditable',
-  'ngAnimate'
+  'xeditable'
 ]);
 
 application.listControllers = angular.module('listControllers', []);
 
-application.listControllers.controller('ListCtrl', ['$scope', '$location', 'toDoSession',
-  function($scope, $location, toDoSession) {
+application.listControllers.controller('ListCtrl', ['$scope', '$location', 'toDoSession', 'ToDoService',
+  function($scope, $location, toDoSession, ToDoService) {
 
-    var todoList = $scope.todoList = toDoSession.get();
+    var todoList = $scope.todoList = toDoSession.get(),
+        toDoService = new ToDoService();
 
     $scope.newToDo = '';
 
     $scope.location = $location;
 
     $scope.$watch('location.path()', function (path) {
+      // Use the path to determine the filter for the ToDo View
       var routes = {
+        '': {isDeleted: false},
         '/': {isDeleted: false},
         '/deleted': {isDeleted: true},
         '/completed': {isCompleted: true, isDeleted: false}
       }
+
+      // todoFilter is what the view uses to filter the repeater
       $scope.todoFilter = routes[path];
     });
 
     $scope.removeOrRestoreItem = function(item) {
-      if($scope.location.path() == '/deleted') {
-        item.isDeleted = false;
-      } else {
-        item.isDeleted = true;
-      }
+      // Restore the item from it's deleted state if viewing deleted items
+      // other wise mark the item as deleted.
+      var restore = $scope.location.path() == '/deleted'
+      toDoService.removeOrRestoreItem(restore, item)
       toDoSession.save(todoList);
     }
 
@@ -44,42 +49,10 @@ application.listControllers.controller('ListCtrl', ['$scope', '$location', 'toDo
 
     $scope.addTodo = function () {
       var toDoDesc = $scope.newToDo.trim();
-      if (toDoDesc.length === 0)
-        return;
-
-      todoList.push({
-        desc: toDoDesc,
-        isCompleted: false,
-        isDeleted: false
-      });
-
-      toDoSession.save(todoList);
-
-      $scope.newToDo = '';
+      if(toDoService.addNewToDo(toDoDesc, todoList)) {
+        toDoSession.save(todoList);
+        $scope.newToDo = '';  // Clear add todo field.
+      }
     };
-
-
   }
 ]);
-
-// application.listFilters = angular.module('listFilters', []);
-
-// application.listFilters.filter('deletedItems', function() {
-//     return function(items) {
-//       return items.filter(function(toDo) {
-//         if(toDo.isDeleted)
-//           return true;
-//         return false;
-//       });
-//     };
-//   });
-
-// application.listFilters.filter('activeItems', function() {
-//     return function(items) {
-//       return items.filter(function(toDo) {
-//         if(toDo.isDeleted)
-//           return false;
-//         return true;
-//       });
-//     };
-//   })
